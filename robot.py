@@ -7,6 +7,8 @@ import ctre
 
 from robotpy_ext.autonomous import AutonomousModeSelector
 
+from robotpy_ext.common_drivers import units, navx
+
 class MyRobot(wpilib.IterativeRobot):
 
     def robotInit(self):
@@ -27,6 +29,7 @@ class MyRobot(wpilib.IterativeRobot):
         }
         self.automodes = AutonomousModeSelector('autonomous', self.components)
 
+        self.navx = navx.AHRS.create_spi()
 
     def disabledInit(self):
         pass
@@ -38,17 +41,31 @@ class MyRobot(wpilib.IterativeRobot):
         self.automodes.run()
 
     def teleopInit(self):
-        pass
+        self.navx.reset()
 
     def teleopPeriodic(self):
 
-        self.robotDrive.arcadeDrive(-self.playerOne.getY(0), self.playerOne.getX(0))
 
-
-        if self.ultrasonic.getVoltage() < 4.9:
-            print("Object Detected")
+        #if self.ultrasonic.getVoltage() < 4.9:
+        #    print("Object Detected")
+        #else:
+            #print("No Object")
+        if self.playerOne.getAButton():
+            self.flip()
+        elif self.playerOne.getBButton():
+            self.navx.reset()
         else:
-            print("No Object")
+            self.robotDrive.arcadeDrive(-self.playerOne.getY(0), self.playerOne.getX(0))
+
+    def flip(self):
+        speed = 0.5
+        if self.navx.getYaw() > 0 and not self.navx.getYaw() < -170 or self.navx.getYaw() > 170:
+            self.robotDrive.arcadeDrive(-self.playerOne.getY(0), speed)
+        elif self.navx.getYaw() < 0 and not self.navx.getYaw() < -170 or self.navx.getYaw() > 170:
+            self.robotDrive.arcadeDrive(-self.playerOne.getY(0), -speed)
+        elif self.navx.getYaw() < -170 or self.navx.getYaw() > 170:
+            self.robotDrive.arcadeDrive(-self.playerOne.getY(0), 0)
+
 
 if __name__ == "__main__":
     wpilib.run(MyRobot)
