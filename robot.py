@@ -18,6 +18,7 @@ class MyRobot(wpilib.IterativeRobot):
         self.motor4 = ctre.WPI_TalonSRX(4)
 
         self.ultrasonic = wpilib.AnalogInput(0)
+        self.distanceSensor = navx.AHRS.create_i2c()
 
         self.playerOne = wpilib.XboxController(0)
 
@@ -45,19 +46,24 @@ class MyRobot(wpilib.IterativeRobot):
 
     def teleopPeriodic(self):
 
+        print(self.motor4.getPulseWidthAll())
 
-        #if self.ultrasonic.getVoltage() < 4.9:
-        #    print("Object Detected")
-        #else:
-            #print("No Object")
+        if self.ultrasonic.getVoltage() < 4.9:
+            print("Close Range - Object Detected")
+#        elif self.distanceSensor.getVolatage() < 4.9:
+#            print("Long Range - Object Detected")
+        else:
+            print("No Object")
+
+
         if self.playerOne.getAButton():
-            self.flip()
+            self.autoAlign()
         elif self.playerOne.getBButton():
             self.navx.reset()
         else:
             self.robotDrive.arcadeDrive(-self.playerOne.getY(0), self.playerOne.getX(0))
 
-    def flip(self):
+    def autoAlign(self):
         speed = 0.5
         if self.navx.getYaw() > 0 and not self.navx.getYaw() < -170 or self.navx.getYaw() > 170:
             self.robotDrive.arcadeDrive(-self.playerOne.getY(0), speed)
@@ -65,7 +71,6 @@ class MyRobot(wpilib.IterativeRobot):
             self.robotDrive.arcadeDrive(-self.playerOne.getY(0), -speed)
         elif self.navx.getYaw() < -170 or self.navx.getYaw() > 170:
             self.robotDrive.arcadeDrive(-self.playerOne.getY(0), 0)
-
 
 if __name__ == "__main__":
     wpilib.run(MyRobot)
